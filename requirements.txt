@@ -1,0 +1,72 @@
+# This file defines the pip-equivalent package dependencies to be installed with either setup.cfg or setup.py modules, or via the command-line interface (CLI) directly with pip.
+# To install pip, run: "$ conda install -yc conda-forge pip==22.3.1" (Conda env. on prem) or "$ apt install python3-pip" (Ubuntu-derivatives).
+# The setup.py module reads this file and installs each package via the pip tool (a python package manager).
+# Alternatively, to manually install all dependencies on this file, run: $ python3 -m pip install -r requirements.txt
+
+# Plotting
+matplotlib==3.6.2
+
+# Quantum Circuit
+pennylane==0.28.0 # CLI: $ pip install pennylane==0.28.0
+
+# Simulation on real device
+pennylane-qiskit # pip install pennylane-qiskit
+
+# Neural Network with TensorFlow
+tensorflow==2.11.0 # CLI: $ pip install tensorflow==2.11.0
+#Note: keras is already included in tensorflow.
+
+# Neural Network with PyTorch CPU version
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.13.0+cpu # CLI: $ pip install torch==1.13.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
+# Kernel machines
+scikit-learn==1.2.1 # CLI: $ pip install scikit-learn==1.2.1 
+
+# Environment variables
+argparse==1.4.0 
+
+# Dataset
+numpy==1.23.5
+pandas==1.5.3 # CLI: $ pip install pandas==1.5.3
+
+# Dev tools
+pylatexenc==2.10 # The 'pylatexenc' library is required to use 'MatplotlibDrawer'.
+watermark==2.3.1 # IPython magic extension for versioning control.
+
+# Unit tests
+pytest==7.2.0
+
+# Jupyter notebook
+ipython>=5.5.0 # Run using: $ ipython
+jupyter # Run using: "$ jupyter notebook" or "$ ipython notebook" once ipython is installed.
+jupyterlab # Run using: $ jupyter lab or $ jupyter-lab
+#jupyter_contrib_nbextensions==0.7.0
+#nbconvert==7.2.7
+##pandoc
+
+# Documentation
+sphinx~=5.3.0
+furo~=2022.9.29
+sphinx-design~=0.3.0 # Extension.
+sphinx-proof==0.1.3 # Extension.
+myst-parser # Markdown support with Markdown parser MyST-Parser.
+
+# Build tools
+#build #Run using: $ python -m build
+#wheel # $ pip install wheel
+
+# CLI cheat sheet:
+## To show the current pip version, run: $ pip --version or $ pip -V
+## To upgrade pip, run: $ python3 -m pip install --user --upgrade pip 
+## To install an individual package, run: $ python3 -m pip install --user <package-name>.
+## To upgrade a package, run: $ python3 -m pip install --user --upgrade <package-name>==<version-number>
+## To uninstall a list of packages, run: $ pip uninstall <package1> <package2>
+## To list installed packages, run: $ pip list
+## To show information about a package, run: $ pip show <package-name>
+
+# NOTES
+## The flags '--user' and '--version' can be abbreviated to '-U' and '-V', respectively.
+## The -m flag in "python3 -m pip" enforce the pip version tied to the active environment, i.e, instructs python to run pip as the __main__ module (script).
+## To use IPython with notebooks or the Qt console one needs to install Jupyter: $ python3 -m pip install jupyter.
+## The 'pip install jupyter' command will install the Jupyter system, including the jupyter notebook, qtconsole, and the IPython kernel.
