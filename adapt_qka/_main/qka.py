@@ -23,12 +23,15 @@ from pennylane import numpy as np # The Pennylane wrapped NumPy.
 #from pennylane.optimize import NesterovMomentumOptimizer
 #from pennylane.templates import AngleEmbedding
 
+# Dataset 
+from .preprocessing import preprocessing
+
 # Training
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 
 # Real Device
-from ibm_token import TOKEN
+from .ibm_token import TOKEN
 
 # Coupling Map
 from qiskit import IBMQ
@@ -47,39 +50,54 @@ np.random.seed(seed=23)
 ###########################################################################
 
 def load_ibm():
-  IBMQ.load_account()
-  IBMQ.save_account(TOKEN)
+  hub = 'qhack-event'
+  group = 'main'
+  project = 'level-1'
+  backend_name = "ibmq_lima"
+  hgp = f'{hub}/{group}/{project}'
+  #print('\n',hgp)
+  # Loading account:
+  IBMQ.save_account(TOKEN, overwrite=True) 
+  # Connect local computer to IBMQ cloud account:
   provider = IBMQ.load_account()
-  #print(IBMQ.providers())
-  #print(provider.backends())
+  # Connecting to IBM provider:
+  ##provider = IBMQ.get_provider(hub=hub, group=group, project=project)
+  #print(f'\nAvailable Providers:\n>>> {IBMQ.providers()}\n')
+  #print(f'\nAvailable Backends:\n>>> {provider.backends()}\n')
   return provider
 
+def transpiler(circuit, dev, provider):
+  backend = provider.get_backend('ibmq_lima')
+  num_qubits = backend.configuration().n_qubits 
+  qubit_layout = CouplingMap(getattr(backend.configuration(), 'coupling_map', None) ).reduce([i for i in range(num_qubits)])
+  print(f'\nQubit layout:\n{qubit_layout}\n')
+  #print(qubit_layout.draw())  
+  transpiled_circuit = qml.transforms.transpile(coupling_map=qubit_layout)(circuit)
+  transpiled_qnode = qml.QNode(transpiled_circuit, dev)
+  return transpiled_qnode
+  
 class AdaptQKA:
   def __init__(self, data, params=False, real_device=False):
     self.X_train, self.X_test, self.y_train, self.y_test = data.values()
     self.real_device = real_device
     self.nqubits = len(self.X_train[0])
+    self.projector = np.zeros((2**self.nqubits, 2**self.nqubits))
+    self.projector[0, 0] = 1
+    #self.wires = self.dev.wires.tolist()
     if not isinstance(params, np.ndarray):
       self.params = np.random.uniform(0,2*np.pi,(2,self.nqubits), requires_grad=True)
     else:
       self.params=params
-    self.projector = np.zeros((2**self.nqubits, 2**self.nqubits))
-    self.projector[0, 0] = 1
-    self.dev = qml.device("default.qubit", wires=self.nqubits, shots=None)
-    #self.wires = self.dev.wires.tolist()
-
-  def transpiler(self):
-    provider = load_ibm()
-    backend = provider.get_backend('ibmq_lima')
-    num_qubits = backend.configuration().n_qubits 
-    qubit_layout = CouplingMap(getattr(backend.configuration(), 'coupling_map', None) ).reduce([i for i in range(num_qubits)])
-    print(f'\nQubit layout:\n{qubit_layout}\n')
-    #print(qubit_layout.draw())  
-    circuit = self.kernel_ansatz
-    transpiled_circuit = qml.transforms.transpile(coupling_map=qubit_layout)(circuit)
-    transpiled_qnode = qml.QNode(transpiled_circuit, self.dev)
-    return transpiled_qnode
-
+    if self.real_device == False:
+      print('Running on simulator...\n')
+      self.dev = qml.device("default.qubit", wires=self.nqubits, shots=None)
+      self.qnode= qml.QNode(self.kernel_ansatz, self.dev)
+    else:
+      print(f"Running on {self.real_device}...\n")
+      provider=load_ibm()
+      self.dev = qml.device('qiskit.ibmq', wires=self.nqubits, backend=self.real_device, provider=provider)
+      self.qnode = transpiler(self.kernel_ansatz, self.dev, provider)
+        
   def fiducial_state_layer(self, lambdas):
     '''
     Fiducial state.
@@ -115,16 +133,16 @@ class AdaptQKA:
     #return qml.probs(wires=wires)
  
   def kernel_value(self, x1, x2, params):
-    print(f'Kernel value between two datapoints:\n>>> {qml.QNode(self.kernel_ansatz, self.dev)(x1, x2, params)}.\n')
+    '''
+    Compute the kernel between two data points.
+    '''
+    print(f'Kernel value between two data points:\n>>> {self.qnode(x1, x2, params)}.\n')
 
   def show_kernel(self, x1, x2, params):
     '''
     To display the quantum circuit layout.
     '''
-    dev = qml.device("default.qubit", wires=4)
-    qnode = qml.QNode(self.kernel_ansatz, dev)
-    print(f'Kernel ansatz:\n\n{qml.draw(qnode)(x1, x2, params)}\n')
-    
+    print(f'Kernel ansatz:\n\n{qml.draw(self.qnode)(x1, x2, params)}\n')
     # Exporting circuit image:
     #fig, ax = qml.draw_mpl(qnode)(x1, x2, params)
     
@@ -132,20 +150,13 @@ class AdaptQKA:
     '''
     Method to compute the i,j entry of the kernel matrix.
     '''
-    if self.real_device == False:
-      #print('Running on simulator...\n')
-      qnode= qml.QNode(self.kernel_ansatz, self.dev)
-    else:
-      dev = qml.device('qiskit.ibmq', wires=self.nqubits, backend=self.real_device)
-      #print(f"Running on {self.real_device}...\n")
-      qnode = self.transpiler(data)
-    return np.array([[qnode(a, b, params) for b in B] for a in A])
+    return np.array([[self.qnode(a, b, params) for b in B] for a in A])
 
-  def target_alignment(self, Y, kernel_matrix):
+  def target_alignment(self, Y, X, kernel_matrix, _lambdas):
       '''
       Kernel-target alignment between kernel and labels.
       '''
-      K = kernel_matrix
+      K = kernel_matrix(X, X, _lambdas)
       T = np.outer(Y, Y)
       inner_product = np.sum(K * T) # np.trace(np.dot(K,T)).
       norm = np.sqrt(np.sum(K * K) * np.sum(T * T))
@@ -167,11 +178,13 @@ class AdaptQKA:
     for i in range(epochs):
       subset = np.random.choice(list(range(len(self.X_train))), 4)
       cost = lambda _lambdas: -self.target_alignment(
-          self.y_train[subset],
-          self.kernel_matrix(self.X_train[subset], self.X_train[subset], _lambdas),
-      )
+        self.y_train[subset],
+        self.X_train[subset],
+        self.kernel_matrix,
+        _lambdas)
       
       # Adaptive approach
+      '''
       grads = qml.grad(cost)(params)
       maxpos = np.argmax(abs(grads)) 
       minpos = np.argmin(abs(grads)) 
@@ -182,15 +195,15 @@ class AdaptQKA:
         params=np.delete(params, minpos)
       sets.append(gatemax)      
       # Adaptive approach
-      
+      '''
       params = opt.step(cost, params)
       # print(f"{i}th's step params: {params}\n")
       current_alignment = self.target_alignment(
-              self.y_train,
-              self.kernel_matrix(self.X_train, self.X_train, params),
-          )
+        self.y_train,
+        self.X_train,
+        self.kernel_matrix,
+        params)
       print(f'Training step {i+1} ------------> Target Alignment = {current_alignment:.3f}')
-  
     print('\nParameters optimized!')
     return params
 
@@ -205,7 +218,9 @@ class AdaptQKA:
   
   def accuracy(self, svm, X, Y_target):
     print('Computing accuracy...')
-    print(f'Accuracy:\n>>> {1 - np.count_nonzero(svm.predict(X) - Y_target) / len(Y_target)}\n')
+    acc = 1 - np.count_nonzero(svm.predict(X) - Y_target) / len(Y_target)
+    print(f'Accuracy:\n>>> {acc}\n')
+    return acc
   
   def prediction(self, svm, test_x, test_y=False):
     '''
@@ -217,13 +232,13 @@ class AdaptQKA:
     print(f'Performing QKA inference with {self.nqubits} qubits...')
     predictions = svm.predict(test_x)
     if test_y:
-      print(f'Correct labels: {test_y[0]}')
+      print(f'Correct label: {test_y[0,0]}')
       accuracy_score(predictions, test_y)    
     print(f'Predicted label: {predictions[0]}\n')
-    return predictions
+    return predictions[0]
     
 if __name__ == '__main__':
-  from preprocessing import preprocessing
+  #from preprocessing import preprocessing
   real_device='ibmq_lima'
   data=preprocessing('iris.txt')
   x_train = data['x_train']
@@ -243,21 +258,23 @@ if __name__ == '__main__':
   print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1], params)}\n')
 
   # Training parameters:
-  new_params = kernel.train(epochs=10, params=params)
-  #print(f'Trained parameter:\n{new_params}')
+  new_params = kernel.train(epochs=2, params=params)
 
   # Train the SVM:
   svm = kernel.train_svm(new_params)
 
   # Prediction with one sample:
-  kernel.prediction(svm, test_x[0].reshape(1, -1))
+  kernel.prediction(svm, test_x[0].reshape(1, -1), test_y[0].reshape(1, -1))
   # Show accuracy for the whole training dataset with the optimized parameters:
-  print('Accuracy for training data:')
+  print('Accuracy on training dataset:')
   kernel.accuracy(svm, x_train, y_train)
   # Show accuracy for the whole test dataset with the optimized parameters:
-  print('Accuracy for test data:')
+  print('Accuracy on test dataset:')
   kernel.accuracy(svm, test_x, test_y)
 
   # Real device:
-  kernel = AdaptQKA(data, real_device)
-  #params_device = kernel.train(epochs=1, params=params)
+  kernel = AdaptQKA(data, real_device=real_device)
+  params = kernel.params
+  params_device = kernel.train(epochs=1, params=params)
+  svm = kernel.train_svm(params_device)
+  kernel.accuracy(svm, x_train, y_train)

@@ -142,7 +142,7 @@ In this work, we extend the quantum kernel alignment (QKA) first proposed in [[1
 2. The D layer is used to encode the data points. 
 
 <div align="center">
-    <img src="https://github.com/QuCAI-Lab/adapt-qka/blob/dev/assets/circuit.png" height="350" width="450" alt="Logo">
+    <img src="https://github.com/QuCAI-Lab/adapt-qka/blob/dev/assets/circuit.png" height="350" width="450" alt="Figure 1">
     <p> Figure 1: the proposed circuit structure.</p>
 </div>
 
@@ -251,7 +251,7 @@ The `python -m pip install .` command is equivalent to the `python -m setup.py i
 
 - Test the trained model:
 ```bash
-python adapt_qka/main/qka.py
+python -m adapt_qka._main.qka
 ```
 
 - Alternatively, run the package:
@@ -277,7 +277,7 @@ params = kernel.params # Built-in initialization. You can pass your own.
 kernel.kernel_value(x_train[0], x_train[1], params)
 ## Show kernel circuit:
 kernel.show_kernel(x_train[0], x_train[0], params)
-## Show kernel matrix:
+## Show kernel matrix for two identical sample pairs:
 print(kernel.kernel_matrix(x_train[:1], x_train[:1], params))
 
 # Train circuit parameters on Simulator:
@@ -287,11 +287,11 @@ new_params = kernel.train(epochs=2, params=params)
 svm = kernel.train_svm(new_params)
 
 # Prediction with one sample:
-kernel.prediction(svm, test_x[0].reshape(1, -1))
+p = kernel.prediction(svm, test_x[0].reshape(1, -1))
 # Show accuracy for the whole training dataset with the optimized parameters:
-kernel.accuracy(svm, x_train, y_train)
+acc1 = kernel.accuracy(svm, x_train, y_train)
 # Show accuracy for the whole test dataset with the optimized parameters:
-kernel.accuracy(svm, test_x, test_y)
+acc2 = kernel.accuracy(svm, test_x, test_y)
 
 # Define the kernel for the real quantum device:
 kernel = qka.AdaptQKA(data, real_device='ibmq_lima')

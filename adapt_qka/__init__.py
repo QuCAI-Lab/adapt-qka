@@ -57,10 +57,9 @@ def about():
 ###########################################################################
 
 # Simulation
-from . import main
-from .main.train_nn import Train
-from .main.qka import AdaptQKA
-from .main.preprocessing import preprocessing
+from ._main.train_nn import Train
+from ._main.qka import AdaptQKA
+from ._main.preprocessing import preprocessing
 
 from .models.tensorflow.neural_network_tensorflow import NeuralNetworkTF, RnnTf
 
