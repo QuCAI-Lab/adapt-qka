@@ -140,7 +140,10 @@ class AdaptQKA:
     #AngleEmbedding(x1, wires=range(self.nqubits))
     #qml.adjoint(AngleEmbedding)(x2, wires=range(self.nqubits))
     qml.adjoint(self.fiducial_state_layer)(params)
-    return qml.expval(qml.Hermitian(self.projector, wires=range(self.nqubits)))
+    if self.real_device == False:
+      return qml.expval(qml.Hermitian(self.projector, wires=range(self.nqubits)))
+    else:
+      return qml.probs(wires=range(self.nqubits))
     #return qml.probs(wires=wires)
  
   def kernel_value(self, x1, x2, params):
@@ -163,7 +166,10 @@ class AdaptQKA:
     '''
     
     # print(f"Transpiled circuitl: {qml.draw(self.qnode)(A[0],A[0],params)}\n")
-    return np.array([[self.qnode(a, b, params) for b in B] for a in A])
+    if self.real_device == False:
+      return np.array([[self.qnode(a, b, params) for b in B] for a in A])
+    else:
+      return np.array([[self.qnode(a, b, params)[0] for b in B] for a in A])
 
   def target_alignment(self, Y, X, kernel_matrix, _lambdas):
       '''
