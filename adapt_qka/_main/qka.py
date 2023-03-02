@@ -86,6 +86,8 @@ def transpiler(circuit, dev, provider):
   transpiled_qnode = qml.QNode(transpiled_circuit, dev)
   # print(qml.draw(transpiled_qnode)())
   return transpiled_qnode
+
+
   
 class AdaptQKA:
   def __init__(self, data, params=False, real_device=False):
@@ -164,13 +166,25 @@ class AdaptQKA:
     '''
     Method to compute the i,j entry of the kernel matrix.
     '''
-    
-    # print(f"Transpiled circuitl: {qml.draw(self.qnode)(A[0],A[0],params)}\n")
-    if self.real_device == False:
-      return np.array([[self.qnode(a, b, params) for b in B] for a in A])
-    else:
-      return np.array([[self.qnode(a, b, params)[0] for b in B] for a in A])
+    length = len(A)
+    matrix = [[0 for x in range(length)]for y in range(length)] 
 
+    if self.real_device == False:
+      for i in range(length):
+        for j in range(i,length):
+          matrix[i][j] = (entry := (self.qnode(A[i], B[j], params)))
+          if i != j:
+            matrix[j][i] = entry
+      return np.array(matrix)
+    
+    else:
+      for i in range(self.nqubits):
+        for j in range(i, self.nqubits):
+          matrix[i][j] = (entry := (self.qnode(A[i], B[j], params)))
+          if i != j:
+            matrix[j][i] = entry
+      return np.array(matrix)
+    
   def target_alignment(self, Y, X, kernel_matrix, _lambdas):
       '''
       Kernel-target alignment between kernel and labels.
@@ -265,37 +279,37 @@ if __name__ == '__main__':
   test_x, test_y = data['x_test'], data['y_test']
 
   # Simulator:
-  # kernel = AdaptQKA(data)
-  # # Initialization of parameters:
-  # params = kernel.params
-  # # Show kernel value between two datapoints:
-  # kernel.kernel_value(x_train[0], x_train[1], params)
-  # # Show kernel circuit:
-  # #print(data['x_train'][0])
-  # kernel.show_kernel(x_train[0], x_train[0], params)
-  # # Show kernel matrix:
-  # print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1], params)}\n')
+  kernel = AdaptQKA(data)
+  # Initialization of parameters:
+  params = kernel.params
+  # Show kernel value between two datapoints:
+  kernel.kernel_value(x_train[0], x_train[1], params)
+  # Show kernel circuit:
+  #print(data['x_train'][0])
+  kernel.show_kernel(x_train[0], x_train[0], params)
+  # Show kernel matrix:
+  print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:5], x_train[:5], params)}\n')
 
-  # # # Training parameters:
-  # new_params = kernel.train(epochs=2, params=params)
+  # # Training parameters:
+  new_params = kernel.train(epochs=2, params=params)
 
-  # # Train the SVM:
-  # svm = kernel.train_svm(new_params)
+  # Train the SVM:
+  svm = kernel.train_svm(new_params)
 
-  # # Prediction with one sample:
-  # kernel.prediction(svm, test_x[0].reshape(1, -1), test_y[0].reshape(1, -1))
-  # # Show accuracy for the whole training dataset with the optimized parameters:
-  # print('Accuracy on training dataset:')
-  # kernel.accuracy(svm, x_train, y_train)
-  # # Show accuracy for the whole test dataset with the optimized parameters:
-  # print('Accuracy on test dataset:')
-  # kernel.accuracy(svm, test_x, test_y)
+  # Prediction with one sample:
+  kernel.prediction(svm, test_x[0].reshape(1, -1), test_y[0].reshape(1, -1))
+  # Show accuracy for the whole training dataset with the optimized parameters:
+  print('Accuracy on training dataset:')
+  kernel.accuracy(svm, x_train, y_train)
+  # Show accuracy for the whole test dataset with the optimized parameters:
+  print('Accuracy on test dataset:')
+  kernel.accuracy(svm, test_x, test_y)
 
   # Real device:
-  kernel = AdaptQKA(data, real_device=real_device)
-  # print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1], params)}\n')
-  params = kernel.params
-  # print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1], params)}\n')
-  params_device = kernel.train(epochs=1, params=params)
-  svm = kernel.train_svm(params_device)
-  kernel.accuracy(svm, x_train, y_train)
+  # kernel = AdaptQKA(data, real_device=real_device)
+  # # print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1], params)}\n')
+  # params = kernel.params
+  # # print(f'Kernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1], params)}\n')
+  # params_device = kernel.train(epochs=1, params=params)
+  # svm = kernel.train_svm(params_device)
+  # kernel.accuracy(svm, x_train, y_train)
