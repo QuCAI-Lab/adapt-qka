@@ -230,11 +230,15 @@ conda create -yn adapt-qka python==3.8.8 && conda activate adapt-qka
 ```
 3. Install pip in the current environment with conda and check for updates with pip:
 ```bash
-conda install -yc conda-forge pip==22.3.1 && python -m pip install --user --upgrade pip
+conda install -yc conda-forge pip==23.0.1 && python -m pip install --user --upgrade pip
 ```
 4. Install the core dependencies with the [requirements.txt](requirements.txt) file:
 ```bash
 python -m pip install -r requirements.txt
+```
+5. Install graphviz with conda for the transpiler function:
+```bash
+conda install python-graphviz
 ```
 
 The `python -m pip install .` command is equivalent to the `python -m setup.py install` command.
@@ -249,7 +253,7 @@ The `python -m pip install .` command is equivalent to the `python -m setup.py i
 <!-- Quickstart: -->
 # Quickstart
 
-- Test the trained model:
+- Train and test the model:
 ```bash
 python -m adapt_qka._main.qka
 ```
@@ -263,41 +267,51 @@ qka.about()
 # Display available methods:
 dir(qka)
 
+'''Data preprocessing:'''
 # Get the pre-processed data:
 data=qka.preprocessing('iris.txt')
 x_train = data['x_train']
 y_train = data['y_train']
 test_x, test_y = data['x_test'], data['y_test']
 
+'''Simulation:'''
 # Define the kernel for Simulator:
 kernel = qka.AdaptQKA(data)
-## Initialization of parameters:
-params = kernel.params # Built-in initialization. You can pass your own.
-## Show kernel value between two datapoints:
+# Initialization of parameters:
+params = kernel.params
+# Show kernel value between two datapoints:
 kernel.kernel_value(x_train[0], x_train[1], params)
-## Show kernel circuit:
-kernel.show_kernel(x_train[0], x_train[0], params)
-## Show kernel matrix for two identical sample pairs:
-print(kernel.kernel_matrix(x_train[:1], x_train[:1], params))
-
-# Train circuit parameters on Simulator:
-new_params = kernel.train(epochs=2, params=params)
-
+# Show kernel matrix:
+print(f'Kernal matrix between two samples:\n{kernel.kernel_matrix(x_train[:5], x_train[:5], params)}')
+# Training parameters:
+new_params, gates = kernel.train(epochs=1, params=params)
+# Show current quantum circuit:
+kernel.show_kernel(x_train[0], x_train[0], new_params, gates, message='Current Qcircuit:')
 # Train the SVM:
 svm = kernel.train_svm(new_params)
-
 # Prediction with one sample:
-p = kernel.prediction(svm, test_x[0].reshape(1, -1))
+kernel.prediction(svm, x_test[0].reshape(1, -1), y_test[0].reshape(1, -1))
 # Show accuracy for the whole training dataset with the optimized parameters:
-acc1 = kernel.accuracy(svm, x_train, y_train)
+print('Accuracy on training dataset:')
+kernel.accuracy(svm, x_train, y_train)
 # Show accuracy for the whole test dataset with the optimized parameters:
-acc2 = kernel.accuracy(svm, test_x, test_y)
+print('Accuracy on test dataset:')
+kernel.accuracy(svm, x_test, y_test)
+
+'''Real device:'''
+# Replace your TOKEN in the adapt_qka/_main/ibm_token.py file.
 
 # Define the kernel for the real quantum device:
 kernel = qka.AdaptQKA(data, real_device='ibmq_lima')
-
-# Train circuit parameters on IBM quantum hardware:
-params_device = kernel.train(epochs=2, params=params)
+# Training parameters:
+params_device, gates = kernel.train(epochs=1, params=params)
+# Show current quantum circuit:
+kernel.show_kernel(x_train[0], x_train[0], params_device, gates, message='Current Qcircuit:')
+# Train the SVM:
+svm = kernel.train_svm(params_device)
+# Show accuracy for the whole training dataset with the optimized parameters:
+print('Accuracy on training dataset:')
+kernel.accuracy(svm, x_train, y_train)
 ```
  
 # Work in progress
@@ -344,6 +358,8 @@ The authors would like to acknowledge [Xanadu.ai](https://www.xanadu.ai/) and th
 <a name="8"></a> \[8] Nakanishi, K. M., Mitarai, K. & Fujii, K. Subspace-search variational quantum eigensolver for excited states. [Phys. Rev. Res. 1, 033062 (2019)](https://journals.aps.org/prresearch/pdf/10.1103/PhysRevResearch.1.033062).
 
 <a name="9"></a> \[9] Y. Liu, S. Arunachalam, and K. Temme, A rigorous and robust quantum speed-up in supervised machine learning. [arXiv:2010.02174](https://arxiv.org/abs/2010.02174) (2020).
+
+<a name="10"></a> \[10] Thomas Hubregtsen, David Wierichs, Elies Gil-Fuster, Peter-Jan H. S. Derks, Paul K. Faehrmann, and Johannes Jakob Meyer, Training Quantum Embedding Kernels on Near-Term Quantum Computers, [Phys. Rev. A 106, 042431](https://journals.aps.org/pra/abstract/10.1103/PhysRevA.106.042431).
 
 <!-- License: -->
 # License

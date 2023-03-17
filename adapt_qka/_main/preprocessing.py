@@ -179,7 +179,7 @@ def preprocessing(file) -> Dict:
   print('\nSplitting dataset into test and training:')
   x_train, y_train = x[:75], y[:75]
   x_test, y_test = x[75:], y[75:]
-  print(f'>>> x_train.shape = {x_train.shape}.\n>>> y_train.shape={y_train.shape}.\n>>> x_test.shape={x_test.shape}.\n>>> y_test.shape={y_test.shape}.\n')
+  print(f'>>> x_train.shape = {x_train.shape}.\n>>> y_train.shape={y_train.shape}.\n>>> x_test.shape={x_test.shape}.\n>>> y_test.shape={y_test.shape}.')
     
   output = {'x_train':x_train, 'x_test':x_test, 'y_train':y_train, 'y_test':y_test}
   return output
