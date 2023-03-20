@@ -84,53 +84,101 @@ Splitting dataset into test and training:
 >>> x_test.shape=(25, 4).
 >>> y_test.shape=(25,).
 
-Kernel value between two datapoints:
->>> 0.87760048090422.
+Kernel Ansatz:
 
-Kernel ansatz:
 0: ──RY(3.25)─╭●────────────────────────────╭RZ(2.47)──RZ(0.44)──RX(0.44)──RX(0.44)†──RZ(0.44)†
 1: ──RY(5.95)─╰RZ(1.39)─╭●──────────────────│──────────RZ(0.17)──RX(0.17)──RX(0.17)†──RZ(0.17)†
 2: ──RY(4.81)───────────╰RZ(4.31)─╭●────────│──────────RZ(0.66)──RX(0.66)──RX(0.66)†──RZ(0.66)†
 3: ──RY(1.77)─────────────────────╰RZ(1.05)─╰●─────────RZ(0.53)──RX(0.53)──RX(0.53)†──RZ(0.53)†
 
-──╭RZ(2.47)†───────────────────────╭●──────────RY(3.25)†─┤ ╭<𝓗(M0)>
-──│─────────────────────╭●─────────╰RZ(1.39)†──RY(5.95)†─┤ ├<𝓗(M0)>
-──│──────────╭●─────────╰RZ(4.31)†──RY(4.81)†────────────┤ ├<𝓗(M0)>
-──╰●─────────╰RZ(1.05)†──RY(1.77)†───────────────────────┤ ╰<𝓗(M0)>
+──╭RZ(2.47)†───────────────────────╭●──────────RY(3.25)†─┤ ╭Probs
+──│─────────────────────╭●─────────╰RZ(1.39)†──RY(5.95)†─┤ ├Probs
+──│──────────╭●─────────╰RZ(4.31)†──RY(4.81)†────────────┤ ├Probs
+──╰●─────────╰RZ(1.05)†──RY(1.77)†───────────────────────┤ ╰Probs
 
-Kernal matrix between same samples:
+Kernel value between the first two data points:
+>>> 0.87760048090422
+
+Kernal matrix between equal samples:
 >>> [[1.]]
 
-Optimizing parameters...
+Loading IBM account with instance ibm-q/open/main...
+
+Qubit layout:
+>>> [[0, 1], [1, 0], [1, 2], [2, 1], [2, 3], [3, 2], [3, 4], [4, 3]]
+
+Transpiling the quantum circuit to match the provided coupling map... Default is ibmq_lima.
+
+Transpiled Kernel Ansatz:
+
+0: ──RY(3.25)─╭●──────────────────╭SWAP──────RZ(0.17)──RX(0.17)──RX(-0.17)──RZ(-0.17)───────────
+1: ──RY(5.95)─╰RZ(1.39)─╭●────────╰SWAP─────╭SWAP──────RZ(0.66)──RX(0.66)───RX(-0.66)──RZ(-0.66)
+2: ──RY(4.81)───────────╰RZ(4.31)─╭●────────╰SWAP─────╭RZ(2.47)──RZ(0.44)───RX(0.44)───RX(-0.44)
+3: ──RY(1.77)─────────────────────╰RZ(1.05)───────────╰●─────────RZ(0.53)───RX(0.53)───RX(-0.53)
+
+─────────────────────────────────────────╭●─────────╭SWAP──RY(-4.81)───────────────────────┤ ╭Probs
+──────────────────────────────╭●─────────╰RZ(-4.31)─╰SWAP─╭SWAP───────RY(-1.77)────────────┤ ├Probs
+───RZ(-0.44)─╭RZ(-2.47)─╭SWAP─╰RZ(-1.05)──────────────────╰SWAP──────╭RZ(-1.39)──RY(-5.95)─┤ ├Probs
+───RZ(-0.53)─╰●─────────╰SWAP────────────────────────────────────────╰●──────────RY(-3.25)─┤ ╰Probs
+
+Optimizing quantum circuit parameters on pennylane default simulator...
 
 Training step 1 ------------> Target Alignment = 0.236
+
 Training step 2 ------------> Target Alignment = 0.241
+
 Training step 3 ------------> Target Alignment = 0.241
+
 Training step 4 ------------> Target Alignment = 0.244
+
 Training step 5 ------------> Target Alignment = 0.250
-Training step 6 ------------> Target Alignment = 0.254
-Training step 7 ------------> Target Alignment = 0.259
-Training step 8 ------------> Target Alignment = 0.262
-Training step 9 ------------> Target Alignment = 0.265
-Training step 10 ------------> Target Alignment = 0.268
 
 Parameters optimized!
+
+Current circuit with optimized parameters:
+
+0: ──RY(3.23)─╭●──────────────────╭SWAP──────RZ(0.17)──RX(0.17)──RX(-0.17)──RZ(-0.17)───────────
+1: ──RY(5.89)─╰RZ(1.38)─╭●────────╰SWAP─────╭SWAP──────RZ(0.66)──RX(0.66)───RX(-0.66)──RZ(-0.66)
+2: ──RY(4.91)───────────╰RZ(4.31)─╭●────────╰SWAP─────╭RZ(2.44)──RZ(0.44)───RX(0.44)───RX(-0.44)
+3: ──RY(1.74)─────────────────────╰RZ(1.08)───────────╰●─────────RZ(0.53)───RX(0.53)───RX(-0.53)
+
+─────────────────────────────────────────╭●─────────╭SWAP──RY(-4.91)───────────────────────┤ ╭Probs
+──────────────────────────────╭●─────────╰RZ(-4.31)─╰SWAP─╭SWAP───────RY(-1.74)────────────┤ ├Probs
+───RZ(-0.44)─╭RZ(-2.44)─╭SWAP─╰RZ(-1.08)──────────────────╰SWAP──────╭RZ(-1.38)──RY(-5.89)─┤ ├Probs
+───RZ(-0.53)─╰●─────────╰SWAP────────────────────────────────────────╰●──────────RY(-3.23)─┤ ╰Probs
 
 Trainig SVM...
 Trained!
 
 Performing QKA inference with 4 qubits...
+Correct label: 1.0
 Predicted label: 1.0
 
-Accuracy for training data:
-Computing accuracy...
-Accuracy:
->>> 1.0
+Accuracy on training dataset:
 
-Accuracy for test data:
 Computing accuracy...
-Accuracy:
->>> 1.0
+Accuracy: 1.0
+
+Accuracy on test dataset:
+
+Computing accuracy...
+Accuracy: 1.0
+
+Kernel Ansatz:
+
+0: ──RY(2.46)─╭●────────────────────────────╭RZ(2.72)──RZ(0.44)──RX(0.44)──RX(0.44)†──RZ(0.44)†
+1: ──RY(4.19)─╰RZ(1.08)─╭●──────────────────│──────────RZ(0.17)──RX(0.17)──RX(0.17)†──RZ(0.17)†
+2: ──RY(4.75)───────────╰RZ(1.33)─╭●────────│──────────RZ(0.66)──RX(0.66)──RX(0.66)†──RZ(0.66)†
+3: ──RY(5.24)─────────────────────╰RZ(5.50)─╰●─────────RZ(0.53)──RX(0.53)──RX(0.53)†──RZ(0.53)†
+
+──╭RZ(2.72)†───────────────────────╭●──────────RY(2.46)†─┤ ╭Probs
+──│─────────────────────╭●─────────╰RZ(1.08)†──RY(4.19)†─┤ ├Probs
+──│──────────╭●─────────╰RZ(1.33)†──RY(4.75)†────────────┤ ├Probs
+──╰●─────────╰RZ(5.50)†──RY(5.24)†───────────────────────┤ ╰Probs
+
+Loading IBM account with instance ibm-q/open/main...
+
+Optimizing quantum circuit parameters on ibmq_lima real hardware...
 ```
 
 <!-- Description: -->
@@ -268,49 +316,51 @@ qka.about()
 dir(qka)
 
 '''Data preprocessing:'''
-# Get the pre-processed data:
-data=qka.preprocessing('iris.txt')
-x_train = data['x_train']
-y_train = data['y_train']
-test_x, test_y = data['x_test'], data['y_test']
+dataset=qka.preprocessing('iris.txt')
+x_train, y_train = dataset['x_train'], dataset['y_train']
+x_test, y_test = dataset['x_test'], dataset['y_test']
+#print(f'\n{(x_train[:1][0] == x_train[0]).all()}') # >>> True
 
-'''Simulation:'''
-# Define the kernel for Simulator:
-kernel = qka.AdaptQKA(data)
-# Initialization of parameters:
-params = kernel.params
+'''Simulator:'''
+kernel = qka.AdaptQKA(data=dataset) # Using built-in parameters.
 # Show kernel value between two datapoints:
-kernel.kernel_value(x_train[0], x_train[1], params)
+print('\nKernel value between the first two data points:\n>>> ', end = '')
+kernel.kernel_value(x_train[0], x_train[1])
 # Show kernel matrix:
-print(f'Kernal matrix between two samples:\n{kernel.kernel_matrix(x_train[:5], x_train[:5], params)}')
-# Training parameters:
-new_params, gates = kernel.train(epochs=1, params=params)
+print(f'\nKernal matrix between equal samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1])}')
+
+# Training parameters with circuit transpilation using custom coupling map:
+provider=load_ibm()
+qubit_layout = get_qubit_layout('ibmq_manila', provider)
+
+# Training parameters with circuit transpilation using default coupling map:
+new_params, gates = kernel.train(epochs=1, threshold=1.0e-5, coupling_map=qubit_layout)
+
 # Show current quantum circuit:
-kernel.show_kernel(x_train[0], x_train[0], new_params, gates, message='Current Qcircuit:')
+kernel.show_kernel(x_train[0], x_train[0], new_params, gates, message='Current circuit with optimized parameters:')
 # Train the SVM:
 svm = kernel.train_svm(new_params)
+
 # Prediction with one sample:
 kernel.prediction(svm, x_test[0].reshape(1, -1), y_test[0].reshape(1, -1))
-# Show accuracy for the whole training dataset with the optimized parameters:
-print('Accuracy on training dataset:')
+# Show accuracy for the training dataset with the optimized parameters:
+print('\nAccuracy on training dataset:')
 kernel.accuracy(svm, x_train, y_train)
-# Show accuracy for the whole test dataset with the optimized parameters:
-print('Accuracy on test dataset:')
+# Show accuracy for the test dataset with the optimized parameters:
+print('\nAccuracy on test dataset:')
 kernel.accuracy(svm, x_test, y_test)
 
 '''Real device:'''
-# Replace your TOKEN in the adapt_qka/_main/ibm_token.py file.
-
 # Define the kernel for the real quantum device:
-kernel = qka.AdaptQKA(data, real_device='ibmq_lima')
+kernel = AdaptQKA(dataset, real_device='ibmq_lima')
 # Training parameters:
-params_device, gates = kernel.train(epochs=1, params=params)
+params_device, gates = kernel.train(epochs=1, threshold=1.0e-5)
 # Show current quantum circuit:
-kernel.show_kernel(x_train[0], x_train[0], params_device, gates, message='Current Qcircuit:')
+kernel.show_kernel(x_train[0], x_train[0], params_device, gates, message='Current circuit with optimized parameters:')
 # Train the SVM:
 svm = kernel.train_svm(params_device)
 # Show accuracy for the whole training dataset with the optimized parameters:
-print('Accuracy on training dataset:')
+print('\nAccuracy on training dataset:')
 kernel.accuracy(svm, x_train, y_train)
 ```
  

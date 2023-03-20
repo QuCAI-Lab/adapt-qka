@@ -30,7 +30,7 @@ qiskit_ibm_provider # $ pip install qiskit_ibm_provider
 torch==1.13.0+cpu # CLI: $ pip install torch==1.13.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 # Kernel machines
-scikit-learn==1.2.1 # CLI: $ pip install scikit-learn==1.2.1 
+scikit-learn==1.2.2 # CLI: $ pip install scikit-learn==1.2.2
 
 # Environment variables
 argparse==1.4.0

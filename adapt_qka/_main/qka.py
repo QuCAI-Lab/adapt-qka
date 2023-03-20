@@ -52,9 +52,10 @@ from typing import Union, List
 # from PIL import Image
 
 # Plotting:
-# import matplotlib
-# from matplotlib import pyplot as plt
-# plt.rcParams.update({'font.size': 10})  # Enlarge matplotlib fonts.
+from retworkx.visualization import mpl_draw
+import matplotlib
+from matplotlib import pyplot as plt
+plt.rcParams.update({'font.size': 10})  # Enlarge matplotlib fonts.
 ###########################################################################
 
 ###########################################################################
@@ -107,7 +108,8 @@ def get_qubit_layout(backend_name: str, provider):
   num_qubits = backend.configuration().n_qubits
   qubit_layout = CouplingMap(getattr(backend.configuration(), 'coupling_map', None) ).reduce([i for i in range(num_qubits)])
   print(f'\nQubit layout:\n>>> {qubit_layout}')
-  print(f'\n{qubit_layout.draw()}') # When using anaconda: "conda install python-graphviz" instead of "pip install graphviz".
+  mpl_draw(qubit_layout.graph) # When using anaconda: "conda install python-graphviz" instead of "pip install graphviz".
+  plt.show(block=True)
   return qubit_layout
 
 
@@ -126,7 +128,7 @@ def transpiler(circuit, dev, coupling_map: list = None):
     print('\nTranspiling the quantum circuit to match ibmq_lima default coupling map...')
     coupling_map=[[0, 1], [1, 0], [1, 2], [1, 3], [2, 1], [3, 1], [3, 4], [4, 3]]
   else:
-    print('\nTranspiling the quantum circuit to match the provided coupling map...')
+    print('\nTranspiling the quantum circuit to match the provided coupling map... Default is ibmq_lima.')
   reduced_layout = []
   for entry in coupling_map:
     if (entry[1], entry[0]) not in reduced_layout:
@@ -144,7 +146,6 @@ class AdaptQKA:
     self.projector = np.zeros((2**self.nqubits, 2**self.nqubits))
     self.projector[0, 0] = 1
     self.gates = gates
-    # self.wires = self.dev.wires.tolist()
     if not isinstance(params, np.ndarray):
       self.params = np.random.uniform(0,2*np.pi,(2,self.nqubits), requires_grad=True)
     else:
@@ -203,8 +204,8 @@ class AdaptQKA:
     self.encoding_layer(x1, x2)
     qml.adjoint(self.fiducial_state_layer)(params)
     #return qml.expval(qml.Hermitian(self.projector, wires=range(self.nqubits)))
-    #return qml.probs(wires=self.dev.wires.tolist())
-    return qml.probs(wires=list(range(self.nqubits)))
+    return qml.probs(wires=self.dev.wires.tolist())
+    #return qml.probs(wires=list(range(self.nqubits)))
 
   def kernel_value(self, x1, x2, params: np.ndarray = None, gates: Union[np.ndarray, List] = None):
     """
@@ -218,7 +219,7 @@ class AdaptQKA:
     """
     if isinstance(params, type(None)):
       params=self.params
-    print(f'\nKernel value between the first two data points:\n>>> {self.qnode(x1, x2, params, gates)}')
+    print(self.qnode(x1, x2, params, gates)[0])
 
   def show_kernel(self, x1, x2, params: np.ndarray, gates: Union[np.ndarray, List] = None, message='Kernel Ansatz:'):
     """
@@ -240,6 +241,7 @@ class AdaptQKA:
     """
     if isinstance(params, type(None)):
       params=self.params
+    '''
     length = len(A)
     matrix = [[0 for x in range(length)] for y in range(length)]
     for i in range(length):
@@ -248,6 +250,8 @@ class AdaptQKA:
         if i != j:
           matrix[j][i] = entry
     return np.array(matrix)
+    '''
+    return np.array([[self.qnode(a, b, params)[0] for b in B] for a in A])
 
   def target_alignment(self, Y, X, kernel_matrix, _lambdas: np.ndarray, gates:Union[np.ndarray, List] = None):
     """
@@ -260,7 +264,8 @@ class AdaptQKA:
     inner_product = inner_product / norm
     return inner_product
 
-  def train(self, epochs: int, params: np.ndarray = None, threshold: float=1.0e-4, coupling_map: list=None, gates:Union[np.ndarray, List] = None):
+  def train(self, epochs: int, threshold: float=1.0e-4,
+            coupling_map: list=None, gates:Union[np.ndarray, List] = None):
     """
     Training loop.
 
@@ -274,8 +279,6 @@ class AdaptQKA:
       - params (np.ndarray): the optimized parameters (Euler angles).
       - gates (np.ndarray or list): the new list of gates.
     """
-    if isinstance(params, type(None)):
-      params = self.params
     if not self.real_device:
       self.dev = qml.device("qiskit.aer", wires=self.nqubits)
       self.qnode = transpiler(self.kernel_ansatz, self.dev, coupling_map)
@@ -283,12 +286,13 @@ class AdaptQKA:
       print('\nOptimizing quantum circuit parameters on pennylane default simulator...')
     else:
       load_ibm()
-      print(f'\nOptimizing quantum circuit parameters on {self.real_device}...')
+      print(f'\nOptimizing quantum circuit parameters on {self.real_device} real hardware...')
       self.dev = qml.device('qiskit.ibmq', wires=self.nqubits, backend=self.real_device)
       self.qnode= qml.QNode(self.kernel_ansatz, self.dev, interface="autograd")
     if not gates:
       gates=[]
     opt = qml.GradientDescentOptimizer(0.2)
+    params = self.params
     for i in range(epochs):
       #time.sleep(1)
       subset = np.random.choice(list(range(len(self.X_train))), 4)
@@ -297,20 +301,19 @@ class AdaptQKA:
         self.X_train[subset],
         self.kernel_matrix,
         _lambdas)
-      ### Adaptive approach ###
       '''
+      ### Adaptive approach ###
       grads = qml.grad(cost)(params)
       maxpos = np.argmax(abs(grads))
       minpos = np.argmin(abs(grads))
-      gatemax=gates[maxpos]
-      gatemin=gates[minpos]
+      gatemax = gates[maxpos]
+      gatemin = gates[minpos]
       if np.amin(abs(grads)) < threshold:
         gates.remove(gatemin)
-        params=np.delete(params, minpos)
-      gates.append(gatemax)     
-      # Adaptive approach
-      '''
+        params = np.delete(params, minpos)
+      gates.append(gatemax)
       ### End of Adaptive approach ###
+      '''
       params = opt.step(cost, params)
       current_alignment = self.target_alignment(
         self.y_train,
@@ -332,66 +335,66 @@ class AdaptQKA:
     """
     print('\nTrainig SVM...')
     svm = SVC(kernel=lambda x1, x2: self.kernel_matrix(x1, x2, params)).fit(self.X_train, self.y_train)
+    #svm = SVC(kernel=self.kernel_matrix).fit(self.X_train, self.y_train)
     print('Trained!')
     return svm
 
-  def accuracy(self, svm, x, y_target):
+  def accuracy(self, svm, x, y):
     """
     Method to compute the accuracy.
 
     Args:
       - svm (sklearn.svm._classes.SVC): the support vector machine classifier.
-      - X (np.ndarray): samples.
-      - Y_target (np.ndarray): labels.
+      - x (np.ndarray): samples.
+      - y (np.ndarray): labels/targets.
     Returns:
       - acc (float): accuracy.
     """
     print('\nComputing accuracy...')
-    acc = 1 - np.count_nonzero(svm.predict(x) - y_target) / len(y_target)
+    acc = 1 - np.count_nonzero(svm.predict(x) - y) / len(y)
     print(f'Accuracy: {acc}')
     return acc
 
-  def prediction(self, svm, test_x, test_y=False):
+  def prediction(self, svm, x, y=None):
     """
     Method for inference.
 
     Args:
       - svm (sklearn.svm._classes.SVC): the support vector machine classifier.
-      - test_x (np.ndarray): test sample, a tensor of features.
-      - test_y (np.ndarray): test label. Default is False.
+      - x (np.ndarray): test sample, a tensor of features.
+      - y (np.ndarray): test label. Default is False.
     Returns:
       - prediction (float): predicted label for input sample.
     """
     print(f'\nPerforming QKA inference with {self.nqubits} qubits...')
-    predictions = svm.predict(test_x)
-    if test_y:
-      print(f'Correct label: {test_y[0,0]}')
-      accuracy_score(predictions, test_y)
+    predictions = svm.predict(x)
+    if not isinstance(y, type(None)):
+      print(f'Correct label: {y[0,0]}')
+      accuracy_score(predictions, y)
     print(f'Predicted label: {predictions[0]}')
     return predictions[0]
 
 if __name__ == '__main__':
   ############## Data preprocessing: ##############
   dataset=preprocessing('iris.txt')
-  x_train = dataset['x_train']
-  y_train = dataset['y_train']
+  x_train, y_train = dataset['x_train'], dataset['y_train']
   x_test, y_test = dataset['x_test'], dataset['y_test']
-
   #print(f'\n{(x_train[:1][0] == x_train[0]).all()}') # >>> True
 
   ############## Simulator: ##############
-  kernel = AdaptQKA(data=dataset, params=None)
+  kernel = AdaptQKA(data=dataset) # Using built-in parameters.
   # Show kernel value between two datapoints:
+  print('\nKernel value between the first two data points:\n>>> ', end = '')
   kernel.kernel_value(x_train[0], x_train[1])
   # Show kernel matrix:
-  print(f'\nKernal matrix between same samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1])}')
+  print(f'\nKernal matrix between equal samples:\n>>> {kernel.kernel_matrix(x_train[:1], x_train[:1])}')
 
   # Training parameters with circuit transpilation using custom coupling map:
   provider=load_ibm()
   qubit_layout = get_qubit_layout('ibmq_manila', provider)
 
   # Training parameters with circuit transpilation using default coupling map:
-  new_params, gates = kernel.train(epochs=1, threshold=1.0e-5, coupling_map=qubit_layout)
+  new_params, gates = kernel.train(epochs=5, threshold=1.0e-5, coupling_map=qubit_layout)
 
   # Show current quantum circuit:
   kernel.show_kernel(x_train[0], x_train[0], new_params, gates, message='Current circuit with optimized parameters:')
@@ -399,19 +402,19 @@ if __name__ == '__main__':
   svm = kernel.train_svm(new_params)
 
   # Prediction with one sample:
-  kernel.prediction(svm, x_test[0], y_test[0])
-  # Show accuracy for the whole training dataset with the optimized parameters:
+  kernel.prediction(svm, x_test[0].reshape(1, -1), y_test[0].reshape(1, -1))
+  # Show accuracy for the training dataset with the optimized parameters:
   print('\nAccuracy on training dataset:')
   kernel.accuracy(svm, x_train, y_train)
-  # Show accuracy for the whole test dataset with the optimized parameters:
+  # Show accuracy for the test dataset with the optimized parameters:
   print('\nAccuracy on test dataset:')
   kernel.accuracy(svm, x_test, y_test)
-  '''
+
   ############## Real device: ##############
   # Define the kernel for the real quantum device:
-  kernel = AdaptQKA(data, real_device='ibmq_lima')
+  kernel = AdaptQKA(dataset, real_device='ibmq_lima')
   # Training parameters:
-  params_device, gates = kernel.train(epochs=1, params=params, threshold=1.0e-5)
+  params_device, gates = kernel.train(epochs=1, threshold=1.0e-5)
   # Show current quantum circuit:
   kernel.show_kernel(x_train[0], x_train[0], params_device, gates, message='Current circuit with optimized parameters:')
   # Train the SVM:
@@ -419,4 +422,3 @@ if __name__ == '__main__':
   # Show accuracy for the whole training dataset with the optimized parameters:
   print('\nAccuracy on training dataset:')
   kernel.accuracy(svm, x_train, y_train)
-  '''
