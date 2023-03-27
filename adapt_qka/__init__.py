@@ -66,7 +66,7 @@ def about():
 ###########################################################################
 
 # Simulation
-from ._main.qka import AdaptQKA
+from ._main.qka import AdaptQKA, load_ibm
 from ._main.preprocessing import preprocessing
 
 from ._main.train_nn import Train
