@@ -389,13 +389,14 @@ class AdaptQKA:
     Returns:
       - prediction (float): predicted label for input sample.
     """
+    labels = {-1: 'setosa', 1: 'versicolor'}
     print(f'\nPerforming QKA inference with {self.nqubits} qubits...')
     predictions = svm.predict(x)
     if not isinstance(y, type(None)):
-      print(f'Correct label: {y[0,0]}')
+      print(f'Correct label: {labels[y[0,0]]}')
       accuracy_score(predictions, y)
-    print(f'Predicted label: {predictions[0]}')
-    return predictions[0]
+    print(f'Predicted label: {labels[predictions[0]]}')
+    return labels[predictions[0]]
 
 if __name__ == '__main__':
   ############## Data preprocessing: ##############
@@ -437,6 +438,7 @@ if __name__ == '__main__':
   print('\nAccuracy on test dataset:')
   kernel.accuracy(svm, x_test, y_test)
 
+  '''
   ############## Real device: ##############
   # Define the kernel for the real quantum device:
   kernel = AdaptQKA(dataset, real_device='ibmq_lima')
@@ -449,3 +451,4 @@ if __name__ == '__main__':
   # Show accuracy for the whole training dataset with the optimized parameters:
   print('\nAccuracy on training dataset:')
   kernel.accuracy(svm, x_train, y_train)
+  '''
