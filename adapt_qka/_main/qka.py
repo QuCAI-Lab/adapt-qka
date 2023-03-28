@@ -298,7 +298,6 @@ class AdaptQKA:
       - gates (np.ndarray or list): the new list of gates.
     """
     if not self.real_device:
-      self.dev = qml.device("qiskit.aer", wires=self.nqubits)
       self.qnode = transpiler(self.kernel_ansatz, self.dev, coupling_map)
       self.show_kernel(self.X_train[0], self.X_train[0], self.init_params, message='Transpiled Kernel Ansatz:')
       print('\nOptimizing quantum circuit parameters on pennylane default simulator...')

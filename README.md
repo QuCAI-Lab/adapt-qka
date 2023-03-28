@@ -325,17 +325,20 @@ print(kernel.kernel_matrix(x_train[:1], x_train[:1]))
 
 # Training parameters with circuit transpilation using default coupling map:
 new_params, new_gates = kernel.train(epochs=1, threshold=1.0e-5)
-
-'''
+# Show current quantum circuit:
+kernel.show_kernel(x_train[0], x_train[0], new_params, new_gates, message='Current circuit with optimized parameters:')
+```
+You can also pass a real device name for custom transpilation:
+```python
 # Training parameters with circuit transpilation using custom coupling map:
 provider=qka.load_ibm()
 qubit_layout = get_qubit_layout('ibmq_manila', provider)
 new_params, new_gates = kernel.train(epochs=1, threshold=1.0e-5, coupling_map=qubit_layout)
-'''
-
 # Show current quantum circuit:
 kernel.show_kernel(x_train[0], x_train[0], new_params, new_gates, message='Current circuit with optimized parameters:')
-
+```
+Finally, train the SVM:
+```python
 # Train the SVM:
 svm = kernel.train_svm(new_params)
 
@@ -345,7 +348,9 @@ kernel.prediction(svm, x_test[0].reshape(1, -1), y_test[0].reshape(1, -1))
 kernel.accuracy(svm, x_train, y_train)
 # Show accuracy for the test dataset with the optimized parameters:
 kernel.accuracy(svm, x_test, y_test)
-
+```
+For experiments with IBM hardware:
+```python
 '''Real device:'''
 # Define the kernel for the real quantum device:
 kernel = AdaptQKA(dataset, real_device='ibmq_lima')
