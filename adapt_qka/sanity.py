@@ -16,16 +16,9 @@
 """Check for installed dependencies"""
 
 ###########################################################################
-try:
-  import numpy
-except ImportError:
-  print(" \
-      ###################################\n \
-      WARNING:\n \
-      >> This package depends on NumPy version 1.23.5.\n \
-      >> To install NumPy, run: $ python3 -m pip install -U numpy==1.23.5\n \
-      ###################################\n"
-       )
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 try:
   import matplotlib
 except ImportError:
@@ -37,6 +30,16 @@ except ImportError:
       ###################################\n"
        )
 try:
+  import numpy
+except ImportError:
+  print(" \
+      ###################################\n \
+      WARNING:\n \
+      >> This package depends on NumPy version 1.23.5.\n \
+      >> To install NumPy, run: $ python3 -m pip install -U numpy==1.23.5\n \
+      ###################################\n"
+       )
+try:
   import sklearn
 except ImportError:
   print(" \
@@ -44,56 +47,6 @@ except ImportError:
       WARNING:\n \
       >> This package depends on scikit-learn version 1.2.1.\n \
       >> To install scikit-learn, run: $ python3 -m pip install -U scikit-learn==1.2.1\n \
-      ###################################\n"
-       )
-try:
-  import tensorflow 
-except ImportError:
-  print(" \
-      ###################################\n \
-      WARNING:\n \
-      >> This package depends on TensorFlow  version 2.11.0.\n \
-      >> To install TensorFlow, run: $ python3 -m pip install -U tensorflow==2.11.0\n \
-      ###################################\n"
-       )
-try:
-  import torch
-except ImportError:
-  print(" \
-      ###################################\n \
-      WARNING:\n \
-      >> This package depends on PyTorch version 1.13.0.\n \
-      >> To install PyTorch, run: $ python3 -m pip install -U torch==1.13.0\n \
-      ###################################\n"
-       )
-try:
-  import pylatexenc
-except ImportError:
-  print(" \
-      ###################################\n \
-      WARNING:\n \
-      >> This package depends on pylatexenc version 2.10.\n \
-      >> To install pylatexenc, run: $ python3 -m pip install -U pylatexenc==2.10\n \
-      ###################################\n"
-       )
-try:
-  import argparse
-except ImportError:
-  print(" \
-      ###################################\n \
-      WARNING:\n \
-      >> This package depends on argparse version 1.4.0.\n \
-      >> To install argparse, run: $ python3 -m pip install -U argparse==1.4.0\n \
-      ###################################\n"
-       )
-try:
-  import watermark
-except ImportError:
-  print(" \
-      ###################################\n \
-      WARNING:\n \
-      >> This package depends on watermark version 2.3.1.\n \
-      >> To install watermark, run: $ python3 -m pip install -U watermark==2.3.1\n \
       ###################################\n"
        )
 try:
@@ -117,3 +70,87 @@ except ImportError:
       ###################################\n"
        )
   raise
+try:
+  import qiskit_ibm_provider
+except ImportError:
+  print(" \
+      ###################################\n \
+      WARNING:\n \
+      >> This package depends on qiskit_ibm_provider version 0.4.0.\n \
+      >> To install qiskit_ibm_provider, run: $ python3 -m pip install -U qiskit_ibm_provider==0.4.0\n \
+      ###################################\n"
+       )
+try:
+  import torch
+except ImportError:
+  print(" \
+      ###################################\n \
+      WARNING:\n \
+      >> This package depends on PyTorch version 1.13.0.\n \
+      >> To install PyTorch, run: $ python3 -m pip install -U torch==1.13.0\n \
+      ###################################\n"
+       )
+try:
+  import pytest
+except ImportError:
+  print(" \
+    ###################################\n \
+    WARNING:\n \
+    >> This package depends on pytest version 7.2.2\n \
+    >> To install pytest, run: $ python3 -m pip install -U pytest==7.2.2\n \
+    ###################################\n"
+        )
+try:
+  import argparse
+except ImportError:
+  print(" \
+    ###################################\n \
+    WARNING:\n \
+    >> This package depends on argparse version 1.4.0\n \
+    >> To install argparse, run: $ python3 -m pip install -U argparse==1.4.0\n \
+    ###################################\n"
+        )
+  raise
+'''
+try:
+  import pylatexenc
+except ImportError:
+  print(" \
+      ###################################\n \
+      WARNING:\n \
+      >> This package depends on pylatexenc version 2.10.\n \
+      >> To install pylatexenc, run: $ python3 -m pip install -U pylatexenc==2.10\n \
+      ###################################\n"
+       )
+try:
+  import watermark
+except ImportError:
+  print(" \
+      ###################################\n \
+      WARNING:\n \
+      >> This package depends on watermark version 2.3.1.\n \
+      >> To install watermark, run: $ python3 -m pip install -U watermark==2.3.1\n \
+      ###################################\n"
+       )
+try:
+  import cuquantum
+except ImportError:
+  print(" \
+    ###################################\n \
+    WARNING:\n \
+    >> This package depends on cuquantum\n \
+    >> To install cuquantum, run: $ python3 -m pip install -U cuquantum\n \
+    ###################################\n"
+        )
+try:
+  import tensorflow 
+except ImportError:
+  print(" \
+      ###################################\n \
+      WARNING:\n \
+      >> This package depends on TensorFlow  version 2.11.0.\n \
+      >> To install TensorFlow, run: $ python3 -m pip install -U tensorflow==2.11.0\n \
+      ###################################\n"
+       )
+  raise
+'''

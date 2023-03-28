@@ -20,8 +20,12 @@
 # Sanity Check 
 from . import sanity 
 
-# Core Dependencies 
-import argparse, os, sys, numpy as np, matplotlib as plt, sklearn as sk, tensorflow as tf, torch, pylatexenc, watermark, pandas as pd, pennylane as qml
+# Core Dependencies
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Disable TensorFlow WARNING and ERROR messages.
+
+import sys, numpy as np, sklearn as sk, pandas as pd, pennylane as qml, \
+    matplotlib as plt, argparse, torch#, pylatexenc, watermark, tensorflow as tf, cuquantum
 
 ###########################################################################
 VERSION_PATH = os.path.join(os.path.dirname(__file__), "VERSION.txt")
@@ -52,15 +56,22 @@ def about():
   print(f"Home-page: {__homepage__}")
   print(f"Authors: {__authors__}")
   print(f"License: {__license__}")
-  print(f'Requires: python=={sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}, numpy=={np.__version__}, matplotlib=={plt.__version__}, pylatexenc=={pylatexenc.__version__}, argparse=={argparse.__version__}, watermark=={watermark.__version__}, pandas=={pd.__version__}, scikit-learn=={sk.__version__}, pytorch=={torch.__version__}, tensorflow=={tf.__version__}, cudatoolkit=={torch.version.cuda}, pennylane=={qml.__version__}')
+  print(f'Requires: python=={sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}, '
+        f'matplotlib=={plt.__version__}, numpy=={np.__version__}, pandas=={pd.__version__}, '
+        f'pennylane=={qml.__version__}, scikit-learn=={sk.__version__}, argparse=={argparse.__version__}, '
+        f'pytorch=={torch.__version__}, ')
+        #f'pylatexenc=={pylatexenc.__version__}, watermark=={watermark.__version__}, '
+        #f'cuquantum=={cuquantum}, tensorflow == {tf.__version__}, ')
 
 ###########################################################################
 
 # Simulation
-from ._main.train_nn import Train
-from ._main.qka import AdaptQKA
+from ._main.qka import AdaptQKA, load_ibm
 from ._main.preprocessing import preprocessing
 
-from .models.tensorflow.neural_network_tensorflow import NeuralNetworkTF, RnnTf
+from ._main.train_nn import Train
 
 from .models.torch.neural_network_torch import NeuralNetworkTorch, CNNTorch, RnnTorch
+
+#from .models.tensorflow.neural_network_tensorflow import NeuralNetworkTF, RnnTf
+
