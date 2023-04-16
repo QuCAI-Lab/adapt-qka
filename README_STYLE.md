@@ -20,14 +20,13 @@
 - Use 2 spaces per indentation level.
 
 ```python
-def some_function(arg1: '') -> '':
+def some_function(arg1: object) -> bool:
   '''
-  Check for empty and None values in a variable.
+  Returns True if the value is None or empty. Returns False otherwise.  
   '''
-  if bool(arg1)==False: # 1st identation level.
-    pass # 2nd identation level.
-  else:
-    return arg1
+  if not arg1: # 1st identation level.
+    return True # 2nd identation level.
+  return False
 ```
 
 ## Backslash
@@ -82,24 +81,26 @@ This project standard is built in close resemblance to the [pandas docstring gui
 
 **Good example:**
 ```python
-def basis_encoding(data: list) -> object:
-  '''
-  This line should provide a short and concise summary of the function. Example: Add up two integer numbers.
-
-  This line is dedicated to providing further details that are not too verbose.
+from typing import Union
+def sum_ab(a: Union[float, str, list, tuple], b: Union[float, str, list, tuple]) -> Union[float, str, list, tuple]:
+  """
+  Adds two objects together.
 
   Args:
-    - data (list): short description of the first variable. (E.g.: a list of float numbers representing a particular bitstring).
+    a (Union[float, str, list, tuple]): The first object to be added.
+    b (Union[float, str, list, tuple]): The second object to be added.
 
   Returns:
-    - basis_state (pennylane.numpy.tensor.tensor): short description of the return. (E.g.: the corresponding qubit state vector in the Z-basis also known as the computational (canonical) basis).
+    Union[float, str, list, tuple]: The sum of objects `a` and `b`.
 
   Examples:
-    >>> encoding([1,0,1,0])
-    |1010>
-  '''
-  basis_state = qml.BasisState(bitstring, wires=[0, 1])
-  return np.asarray(basis_state)
+    >>> sum_ab(2, 2)
+    4
+    >>> sum_ab([1, 2], [3, 4])
+    [1, 2, 3, 4]
+  """
+  variable_name = a + b
+  return variable_name
 ```
 
 # Argparse
@@ -151,19 +152,43 @@ print(dir(object2))
 ```python
 class Complex_(object):
   def __init__(self, real:float=None, imag:float=None) -> None:
-        self.real=real
-        self.imag=imag
+    self.real=real
+    self.imag=imag
 
   def __complex__(self):
     '''
     Return the corresponding complex number.
     '''
-    return self.real + self.imag*1j
+    return self.real_new + self.imag_new*1j
 
-  def __add__(self, self2):
+  def __add__(self, other):
     '''Add two objects (complex numbers).'''
-    return Complex_(self.real + self2.real, \
-    self.imag + self2.imag)
+    self.name = "__add__"
+    self.real_new = self.real + other.real
+    self.imag_new = self.imag + other.imag
+    return self
+
+  def __sub__(self, other):
+    '''Subtract two objects (complex numbers).'''
+    self.name = "__sub__"
+    self.real_new = self.real - other.real
+    self.imag_new = self.imag - other.imag
+    return self
+
+  def __mul__(self, other):
+    '''Multiply two objects (complex numbers).'''
+    self.name = "__mul__"
+    self.real_new = (self.real * other.real) - (self.imag * other.imag)
+    self.imag_new = (self.real * other.imag) + (self.imag * other.real)
+    return self
+
+  def __truediv__(self, other):
+    '''Divide two objects (complex numbers).'''
+    self.name = "__truediv__"
+    denominator = (other.real ** 2) + (other.imag ** 2)
+    self.real_new = ((self.real * other.real) + (self.imag * other.imag))/denominator
+    self.imag_new = ((self.imag * other.real) - (self.real * other.imag))/denominator
+    return self
 
   def __str__(self):
     '''
@@ -174,9 +199,10 @@ class Complex_(object):
   def __repr__(self):
     '''
     Return a human-readable string representation of the class for developers.
-    '''    
-    return str(self)
+    '''
+    return f"Result = {self.__complex__()}, {self.name} method was used."
 
 z=Complex_(1,2)
-print(f"{z}\n{z+z}")
+print(f'{z+z}, {z-z}, {z*z}, {z/z}\n')
+print(f'{repr(z+z)}\n{repr(z-z)}\n{repr(z*z)}\n{repr(z/z)}')
 ```
