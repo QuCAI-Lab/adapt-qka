@@ -112,37 +112,42 @@ def min_max_norm(x: np.ndarray) -> np.ndarray:
         norm_X[:,col] = (x[:,col]-min_val)/(max_val-min_val) # Normalization. Replace each element of the i-th column by its normalization factor.
       return norm_X
     
-    
-def shuffle(a: np.ndarray, b: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def shuffle(a: np.ndarray, b: np.ndarray, random_seed: int = None) -> Tuple[np.ndarray, np.ndarray]:
   '''
-  This function shuffles the dataset.
+  This function shuffles the dataset maintaining the correspondence between samples and labels.
 
   Args:
-      - a (numpy.ndarray): the normalized dataset.
-
-  Args:
-      - b (numpy.ndarray): the array with the corresponding one-hot labels.
+      - a (numpy.ndarray): the normalized samples.
+      - b (numpy.ndarray): array of corresponding one-hot labels.
+			- random_seed (int): random seed for reproducibility. Default is None.
 
   Returns:
-      - output (tuple): feature-label pairs of type numpy.ndarray.
+      - tuple: shuffled sample-label pairs as NumPy arrays.
 
   Example:
-    >>> shuffle_together(np.random.random((2, 4)), np.random.random((2, 3)))
+    >>> shuffle(np.random.random((2, 4)), np.random.random((2, 3)))
 		(array([[...],[...]]), array([[...],[...]]))
   '''
   print('Running shuffle() function on dataset...')
-  random.seed(1)
+	if not isinstance(a, np.ndarray) or not isinstance(b, np.ndarray):
+		raise ValueError("Both 'samples' and 'labels' must be NumPy arrays.")
+	if a.shape[0] != b.shape[0]:
+		raise ValueError("Arrays of samplea and labels must have the same number of rows.")
+	if random_seed is not None:
+		random.seed(random_seed)
   indices = np.arange(a.shape[0])
   random.shuffle(indices)	
-  new_a = np.empty(a.shape,dtype=a.dtype)
-  new_b = np.empty(b.shape,dtype=b.dtype)
-  for old_index,new_index in enumerate(indices):
-    new_a[new_index] = a[old_index]
-    new_b[new_index] = b[old_index]
-    output = new_a, new_b
-  
-  return output
-  
+	a[:] = a[indices]
+	b[:] = b[indices]
+	return a, b
+	'''
+	new_a = np.empty_like(a)
+	new_b = np.empty_like(b)
+  for old_index, new_index in enumerate(indices):
+    new_a[old_index] = a[new_index]
+    new_b[old_index] = b[new_index]
+	return new_a, new_b
+ '''  
   
 def preprocessing(file) -> Dict: 
   '''
