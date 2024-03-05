@@ -14,7 +14,7 @@
 <!-- Title: -->
 <div align="center">
   <h1><a href="https://github.com/XanaduAI/QHack2023"> QHack2023 Open Hackathon </a></h1>
-  <h2> Adaptive Quantum Kernel Alignment for data Classification </h2>
+  <h2> Adaptive Quantum Kernel Alignment for Data Classification </h2>
 </div>
 <br> 
 <br> 
@@ -23,14 +23,11 @@
 <!-- Team: -->
 <div align="center">
   <b>
-    Authors: <a target="_blank" href="https://github.com/camponogaraviera">¹²Lucas Camponogara Viera</a>, 
-    <a target="_blank" href="https://github.com/wormyu">²陳宏宇</a>. 
+    Authors: <a target="_blank" href="https://github.com/camponogaraviera">Lucas Camponogara Viera</a> and <a target="_blank" href="https://github.com/wormyu"> Chen Hong Yu (陳宏宇)</a>. 
   </b>
 <!-- Institution: -->
 <br>
-<b><a target="_blank" href="https://github.com/QuCAI-Lab">¹QuCAI-Lab, Taipei, Taiwan</a></b>.
-<br>
-<b><a target="_blank" href="https://quantum.ntu.edu.tw/?page_id=275">²IBM Quantum Hub at NTU, Taipei, Taiwan</a></b>.<br>
+<b><a target="_blank" href="https://quantum.ntu.edu.tw/?page_id=275">IBM Quantum Hub at NTU, Taipei, Taiwan</a></b>.<br>
 </div>
 
 
@@ -40,7 +37,7 @@
 <a href="https://numpy.org/" target="_blank" rel="noopener noreferrer"><img height="27" src="https://numpy.org/images/logo.svg"></a>
 <a href="https://matplotlib.org" target="_blank" rel="noopener noreferrer"><img height="27" src="https://matplotlib.org/_static/images/logo2.svg"></a>
 <a href="https://pennylane.ai/" target="_blank" rel="noopener noreferrer"><img height="27" src="https://pennylane.ai/img/logo.png"></a>
-<a target="_blank" href="https://www.tensorflow.org/"><img height="30" src="https://www.gstatic.com/devrel-devsite/prod/v2484c9574f819dcf3d7ffae39fb3001f4498b2ece38cec22517931d550e19e7d/tensorflow/images/lockup.svg" /></a>
+<a target="_blank" href="https://www.tensorflow.org/"><img height="30" src="https://www.gstatic.com/devrel-devsite/prod/v50a9748f336f0601961fb23638b43fbbc8f87f50f5f0aa83e2751247a72fbd3b/tensorflow/images/lockup.svg" /></a>
 <a target="_blank" href="https://keras.io/"><img height="30" src="https://keras.io/img/logo.png" /></a>
 <a href="https://pytorch.org/"  target="_blank" rel="noopener noreferrer"><img height="30" src="https://pytorch.org/assets/images/pytorch-logo.png"></a> 
 <a target="_blank" href="https://scikit-learn.org/stable/"><img height="30" src="https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png" /></a>
@@ -361,29 +358,11 @@ svm = kernel.train_svm(params_device)
 print('\nAccuracy on training dataset:')
 kernel.accuracy(svm, x_train, y_train)
 ```
- 
-# Work in progress
-
-Create the RNN model (add support for PyTorch and TensorFlow) for parameter initialization:
-```python
-NUM_ANGLES=8
-nn=qka.NeuralNetworkTorch(4)
-rnn1=qka.RnnTf(NUM_ANGLES) # TensorFlow.
-rnn2=qka.RnnTorch(NUM_ANGLES) # Torch.
-nn # To visualize Torch model architecture.
-```
-Train the neural network-based QKA model to get the parameter initialization:
-```python
-# Under development...
-initialization = qka.Train(data).neural_network_torch(neural_network=nn, epochs=10, cost=None)
-```
-  
 
 <!-- Acknowledgement: -->
-# Acknowledgement
+# Acknowledgements
 
 The authors would like to acknowledge [Xanadu.ai](https://www.xanadu.ai/) and the [Open Hackathon Sponsors](https://github.com/XanaduAI/QHack2023#hackathon-prizes) for the opportunity.
-
 
 <!-- References: -->
 # References &nbsp; <a href="#"><img valign="middle" height="45px" src="https://img.icons8.com/book" width="45" hspace="0px" vspace="0px"></a> 
