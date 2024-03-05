@@ -1,11 +1,8 @@
 <!-- Shields: -->
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?logo=paypal&style=flat-square)](https://www.paypal.me/CamponogaraViera/100)
-![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-informational)
 [![Python](https://img.shields.io/badge/Python-3.8.8-informational)](https://www.python.org/)
 [![PennyLane](https://img.shields.io/badge/PennyLane-%E2%89%A5%200.28.0-6133BD)](https://pennylane.ai/)
 [![License](https://img.shields.io/github/license/QuCAI-Lab/adapt-qka.svg?logo=CreativeCommons&style=flat-square)](https://github.com/QuCAI-Lab/adapt-qka/blob/dev/LICENSE.md)
 [![Contributions](https://img.shields.io/badge/contributions-welcome-orange?style=flat-square)](https://github.com/QuCAI-Lab/adapt-qka/pulls)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/QuCAI-Lab/adapt-qka/graphs/commit-activity)
 
 <!-- Logo: -->
 <div align="center">
@@ -418,7 +415,3 @@ The authors would like to acknowledge [Xanadu.ai](https://www.xanadu.ai/) and th
 This work is licensed under a [Apache License 2.0](LICENSE.md) license.
 
 <hr>
-
-Created and maintained by [@camponogaraviera][1].
-
-[1]: https://github.com/camponogaraviera
