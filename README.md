@@ -37,9 +37,6 @@
 <a href="https://numpy.org/" target="_blank" rel="noopener noreferrer"><img height="27" src="https://numpy.org/images/logo.svg"></a>
 <a href="https://matplotlib.org" target="_blank" rel="noopener noreferrer"><img height="27" src="https://matplotlib.org/_static/images/logo2.svg"></a>
 <a href="https://pennylane.ai/" target="_blank" rel="noopener noreferrer"><img height="27" src="https://pennylane.ai/img/logo.png"></a>
-<a target="_blank" href="https://www.tensorflow.org/"><img height="30" src="https://www.gstatic.com/devrel-devsite/prod/v50a9748f336f0601961fb23638b43fbbc8f87f50f5f0aa83e2751247a72fbd3b/tensorflow/images/lockup.svg" /></a>
-<a target="_blank" href="https://keras.io/"><img height="30" src="https://keras.io/img/logo.png" /></a>
-<a href="https://pytorch.org/"  target="_blank" rel="noopener noreferrer"><img height="30" src="https://pytorch.org/assets/images/pytorch-logo.png"></a> 
 <a target="_blank" href="https://scikit-learn.org/stable/"><img height="30" src="https://scikit-learn.org/stable/_static/scikit-learn-logo-small.png" /></a>
 <a target="_blank" href="https://pandas.pydata.org/docs/"><img height="30" src="https://pandas.pydata.org/docs/_static/pandas.svg" /></a>
 <br>
